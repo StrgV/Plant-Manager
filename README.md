@@ -1,7 +1,7 @@
 # Plant-Manager
 
-<div>
-  <img src="PlantMonitorLogo.png" style="display: flex; justify-content: center; align-items: center; width: 20%"/>
+<div align="center">
+  <img src="PlantMonitorLogo.png" style="width: 20%"/>
 </div>
 
 ## Projektidee
