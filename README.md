@@ -1,5 +1,9 @@
 # Plant-Manager
 
+<div>
+  <img src="PlantMonitorLogo.png" style="display: flex; justify-content: center; align-items: center"/>
+</div>
+
 ## Projektidee
 Eine Pflanze soll automatisiert bewässert und überwacht werden. Wenn der Feuchtigkeitssensor einen gewissen Schwellwert überschreitet, wird die Tauchpumpe in Gang gesetzt und bewässert die Pflanze mit einer festen Menge Wasser.
 Parallel werden die Daten des Feuchtigkeitssensors gemeinsam mit den Werten eines Thermometers.
