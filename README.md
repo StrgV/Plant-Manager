@@ -33,7 +33,7 @@ Das erstellte Video wird schlussendlich über die Youtube API hochgeladen.
 
 ### Grobe Architektur
 
-<img width="2356" height="1905" alt="image" src="https://github.com/user-attachments/assets/63c4c3b3-c450-4fb2-94b0-16ab1918a3b1" />
+<img width="70%"  alt="image" src="https://github.com/user-attachments/assets/63c4c3b3-c450-4fb2-94b0-16ab1918a3b1" />
 
 
 ### Anstehende Aufgaben
