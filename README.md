@@ -1,7 +1,7 @@
 # Plant-Manager
 
 <div align="center">
-  <img src="PlantMonitorLogo.png" style="width: 20%"/>
+  <img src="PlantManagerLogo.png" style="width: 20%"/>
 </div>
 
 
