@@ -1,0 +1,30 @@
+services:
+  fastapi_uploader:
+    # Bild bauen: Nutzt das Dockerfile im selben Verzeichnis
+    build: . 
+    
+    container_name: plant_manager_api
+    
+    # Zugriff dann über http://dein-server-ip:8000
+    ports:
+      - "8000:8000"
+      
+    # Das Host-Verzeichnis (links) wird mit dem Container-Verzeichnis (rechts) synchronisiert.
+    # Pfad auf deinem Server.
+    volumes:
+      - ./data/images:/app/uploaded_images
+      
+    # Start-Befehl: Führt den uvicorn-Server wie im Dockerfile oder hier definiert aus.
+    # (Kann weggelassen werden, wenn im Dockerfile CMD oder ENTRYPOINT definiert ist)
+    # command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
+    
+    # Optional: Neustart-Richtlinie
+    # Startet den Dienst neu, wenn er stoppt (z.B. nach einem Server-Neustart)
+    restart: unless-stopped 
+
+# Definiert die Volumes, die von den Services genutzt werden (hier implizit mit "bind mount" verwendet)
+# Diese Sektion wird technisch nicht benötigt, da wir ein "bind mount" verwenden,
+# ist aber für zukünftige, benannte Volumes nützlich.
+# volumes:
+#   images:
+#     # Driver kann hier optional angegeben werden
