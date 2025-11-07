@@ -198,6 +198,3 @@ package
 # Ignore all local history of files
 .history
 .ionide
-
-### Docker ###
-.env
