@@ -1,3 +1,6 @@
+# Created by https://www.toptal.com/developers/gitignore/api/svelte,python,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=svelte,python,visualstudiocode
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -170,26 +173,12 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-### Vim ###
-# Swap
-[._]*.s[a-v][a-z]
-!*.svg  # comment out if you don't need vector files
-[._]*.sw[a-p]
-[._]s[a-rt-v][a-z]
-[._]ss[a-gi-z]
-[._]sw[a-p]
+### Svelte ###
+# gitignore template for the SvelteKit, frontend web component framework
+# website: https://kit.svelte.dev/
 
-# Session
-Session.vim
-Sessionx.vim
-
-# Temporary
-.netrwhist
-*~
-# Auto-generated tag files
-tags
-# Persistent undo
-[._]*.un~
+.svelte-kit/
+package
 
 ### VisualStudioCode ###
 .vscode/*
