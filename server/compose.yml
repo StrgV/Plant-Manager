@@ -5,7 +5,7 @@ services:
     # Build Dockerfile
     build:
       context: .
-      args:
+#      args:
         # Public build arguments here
         # - PUBLIC_API_KEY=${PUBLIC_API_KEY}
     

@@ -21,8 +21,12 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Run as non root user
+# Run as non root user for security reasons
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Give container user privileges for the app directory
+RUN chown -R appuser:appgroup /app
+
 USER appuser
 
 # Install production deps
