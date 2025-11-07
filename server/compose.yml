@@ -1,0 +1,19 @@
+services:
+  plant-monitor-server:
+    image: plant-monitor-server:latest
+    
+    # Build Dockerfile
+    build:
+      context: .
+      args:
+        # Public build arguments here
+        # - PUBLIC_API_KEY=${PUBLIC_API_KEY}
+    
+    restart: unless-stopped
+    
+    env_file:
+      - .env
+      
+    ports:
+      - "8080:3000"
+
