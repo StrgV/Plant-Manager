@@ -198,3 +198,7 @@ package
 # Ignore all local history of files
 .history
 .ionide
+
+### Image Uploads ###
+server/static/uploads/*
+!server/static/uploads/.gitkeep
