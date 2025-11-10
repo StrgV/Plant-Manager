@@ -22,10 +22,9 @@ Das erstellte Video wird schlussendlich über die Youtube API hochgeladen.
   - [Amazon](https://www.amazon.de/RUNCCI-YUN-Wasserpumpe-Motorpumpe-Schlauch-Bew%C3%A4sserung/dp/B082PM8L6X?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=1IZ40NQDKJE52&dib=eyJ2IjoiMSJ9.asLt2XxvrvR79r78qc3_FLwwUi9BLjmo1mcklVcR5Pm7jV54SJ5Q8A_Uwa1-ojuVHB93UNZoWehldmWD4kyAfsgsENusT-yR4vq07TEjAaJ5A3n6yvIb-_AiasZWGMW7YBO5GPY_sgQSpy5EVtkRpPV3m_wWCda1_BDKotpttHtOt99p6qFNpOQHKcIWSLKaI_fFul0YdjxLuI5Am7lCTCh2vLyFVot906HpcZlX7ZRpsuWmjD00CMDAYjGb2shZwqNLDYjdhsvlgCBTf4bHjj-XwVb01wC2d7eVZgUgRlQ.bKYC3zveW7ZnSlETCFvJh9o8mKRlQqQKbPfT_qtMZJA&dib_tag=se&keywords=tauchpumpe%2B5v%2Bwasser&qid=1761128003&sprefix=tauchpumpe%2B5v%2Bwasser%2Caps%2C85&sr=8-6&th=1)
 - [x] Schlauch
   - Bei Pumpe dabei
-- [ ] Dripper (brauchen wir vllt nich)
 - [x] Wasserbehälter (nehmen wir irgend ne flasche nobody cares
 - [ ] Pflanze (baumarkt)
-- [ ] Netzteil (hab ich glaub, vielleicht braucht die pumpe extra ein netzteil)
+- [x] Netzteil
 - [ ] Kamerastativ / Gehäuse (Wird outsourced an die PL 3D-Printing GmbH)
 - [x] Licht (Hat die Kamera an sich)
   - [Ansonsten Amazon](https://www.amazon.de/AZDelivery-MAX7219-Matrix-Anzeigemodul-Arduino/dp/B07CRF13ZQ?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=1TMHUSM9RTWWJ&dib=eyJ2IjoiMSJ9.9t2XF8EZjkCsIa15JZC6R8RctUJOu0X04KrwVrR4Yw4P-X5g7xeNBy5LWe76wqSo6Ua8Fwb5alQP2pKMXtGfzLf9UnvG0YIZBm7Dvk1t3DcDTO2kJ-L2AgSdFMdMi18Hath5EP_pfn_1TDYGNtJ2MvvTCWRvOtDmQf_3i_tlB3YeJ77yH00UqNA8lxLU0KbLVdTZ7UJ2Ob8Xcsip-tKSlrNzr6uoCs3y2xVDlNZw-e4.UBhtLyRmsmcCsMpZEPe932PS6zMEP9ZR3Am09XghxQM&dib_tag=se&keywords=raspberry%2Bpi%2Bled%2Blight&qid=1761128481&sprefix=raspberry%2Bpi%2Bled%2Blight%2Caps%2C83&sr=8-2&th=1)
@@ -40,22 +39,22 @@ Das erstellte Video wird schlussendlich über die Youtube API hochgeladen.
 ### Anstehende Aufgaben
 
 - Aufbau
-  - Pflanze herbekommen 
-  - Pumpe mit Wasserreservoir
-  - Kamerastativ irgendwie
-  - Vielleicht irgendwas was den Hintergrund ganz ok aussehen lässt, z.B. was das ein DIN A4/3 Papier hochhalten würde
+  - [ ] Pflanze herbekommen 
+  - [ ] Pumpe mit Wasserreservoir
+  - [ ] Kamerastativ irgendwie
+  - [ ] Vielleicht irgendwas was den Hintergrund ganz ok aussehen lässt, z.B. was das ein DIN A4/3 Papier hochhalten würde
 - Raspberry Pi
-  - Jumper Kabel organisieren
-  - Python Programm
-    - Feuchtigkeitsstand überprüfen und einen Schwellwert für die Pumpe definieren
-    - Pumpe aktivieren entsprechend für die Pflanze (Wasserbedarf für jede Pflanze unterschiedlich)
-    - Mit Kamera alle 30min Bild machen
-    - API Anfrage an Server mit Bild (und evtl. Messwerten der Feuchtigkeit für Graph im Video)
-- Server (Tim)
-  - REST API, welche Bilder entgegen nehmen kann
-  - Am ende des Tages Videoerstellung mittels FFMPEG
-  - Upload des Videos über die Youtube API
-  - Server Programm läuft in Docker
+  - [ ] Jumper Kabel organisieren
+  - [ ] Python Programm
+    - [ ] Feuchtigkeitsstand überprüfen und einen Schwellwert für die Pumpe definieren
+    - [ ] Pumpe aktivieren entsprechend für die Pflanze (Wasserbedarf für jede Pflanze unterschiedlich)
+    - [ ] Mit Kamera alle 30min Bild machen
+    - [ ] API Anfrage an Server mit Bild (und evtl. Messwerten der Feuchtigkeit für Graph im Video)
+- Server
+  - [ ] REST API, welche Bilder entgegen nehmen kann
+  - [ ] Am ende des Tages Videoerstellung mittels FFMPEG
+  - [ ] Upload des Videos über die Youtube API
+  - [x] Server App läuft in Docker
 
 
 
