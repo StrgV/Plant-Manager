@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
-    console.log(`✅ Bild gespeichert: ${uniqueFilename}`);
+    console.log(`Bild gespeichert: ${uniqueFilename}`);
 
     return json(
       {
