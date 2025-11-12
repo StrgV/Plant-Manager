@@ -21,6 +21,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install ffmpeg for timelapse video creation
+RUN apk add --no-cache ffmpeg
+
 # Run as non root user for security reasons
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 

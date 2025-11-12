@@ -16,4 +16,8 @@ services:
       
     ports:
       - "8080:3000"
-
+    
+    # Volumes für persistente Daten
+    volumes:
+      - ./static/uploads:/app/static/uploads
+      - ./static/videos:/app/static/videos
