@@ -1,16 +1,17 @@
 import { google } from 'googleapis';
 import readline from 'readline';
+import 'dotenv/config'; // <--- WICHTIG: Lädt die .env Datei sofort
 
-// 1. Gehe zu: https://console.cloud.google.com/
-// 2. Erstelle ein neues Projekt
-// 3. Aktiviere YouTube Data API v3
-// 4. Erstelle OAuth 2.0 Credentials (Desktop App)
-// 5. Füge diese Werte in .env ein
+// Debugging: Prüfen, ob die Werte jetzt da sind (kannst du später löschen)
+if (!process.env.YOUTUBE_CLIENT_ID || !process.env.YOUTUBE_CLIENT_SECRET) {
+    console.error("❌ FEHLER: .env Datei wurde nicht geladen oder Variablen fehlen!");
+    process.exit(1);
+}
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.YOUTUBE_CLIENT_ID,
   process.env.YOUTUBE_CLIENT_SECRET,
-  'http://localhost:3000' // Redirect URI
+  'http://localhost:3000' // WICHTIG: Muss exakt so in der Google Cloud Console stehen
 );
 
 const SCOPES = ['https://www.googleapis.com/auth/youtube.upload'];
@@ -31,11 +32,16 @@ const rl = readline.createInterface({
 // Schritt 2: Code eingeben und Token erhalten
 rl.question('Gib den Authorization Code ein: ', async (code) => {
   try {
-    const { tokens } = await oauth2Client.getToken(code);
-    console.log('\n✅ Refresh Token (füge diesen in .env ein):');
+    // Den Code (der URL-encodet sein könnte) bereinigen
+    const decodedCode = decodeURIComponent(code);
+    
+    const { tokens } = await oauth2Client.getToken(decodedCode);
+    console.log('\n✅ ERFOLG! Refresh Token (füge diesen in .env ein):');
+    console.log('------------------------------------------------');
     console.log(tokens.refresh_token);
+    console.log('------------------------------------------------');
   } catch (error) {
-    console.error('Fehler:', error);
+    console.error('Fehler beim Token-Austausch:', error);
   }
   rl.close();
 });
