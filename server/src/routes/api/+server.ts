@@ -36,10 +36,10 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ message: 'Keine Datei gefunden' }, { status: 400 });
     }
 
-    // Validierung: Nur Bilder erlauben
-    if (!file.type.startsWith('image/')) {
-      return json({ message: 'Nur Bilddateien erlaubt' }, { status: 400 });
-    }
+    // // Validierung: Nur Bilder erlauben
+    // if (!file.type.startsWith('image/')) {
+    //   return json({ message: 'Nur Bilddateien erlaubt' }, { status: 400 });
+    // }
 
     // 2. Erstellen eines eindeutigen Dateinamens
     const timestamp = getTimestamp();
