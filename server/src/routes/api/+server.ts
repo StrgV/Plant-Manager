@@ -7,6 +7,15 @@ import { existsSync } from 'fs';
 // ACHTUNG: Der Upload-Ordner muss existieren
 const UPLOAD_DIR = path.resolve('static/uploads');
 
+// Hilfsfunktion: Zeitstempel für Dateinamen (z.B. 2025-11-21_23-55-01)
+function getTimestamp() {
+  const now = new Date();
+  return now.toISOString()
+    .replace(/T/, '_')      // T durch _ ersetzen
+    .replace(/\..+/, '')    // Millisekunden entfernen
+    .replace(/:/g, '-');    // Doppelpunkte durch Bindestriche (Windows-kompatibel)
+}
+
 // Stelle sicher, dass der Upload-Ordner existiert
 async function ensureUploadDir() {
   if (!existsSync(UPLOAD_DIR)) {
@@ -33,21 +42,21 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     // 2. Erstellen eines eindeutigen Dateinamens
-    const ext = path.extname(file.name);
-    const uniqueFilename = `${Date.now()}${ext}`; // ✅ FIXED: Date.now() mit Klammern!
-    const filePath = path.join(UPLOAD_DIR, uniqueFilename);
+    const timestamp = getTimestamp();
+    const filename = `cam_${timestamp}.jpg`;
+    const filePath = path.join(UPLOAD_DIR, filename);
 
     // 3. Datei speichern
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
-    console.log(`Bild gespeichert: ${uniqueFilename}`);
+    console.log(`Bild gespeichert: ${filename}`);
 
     return json(
       {
         message: 'Bild erfolgreich gespeichert',
-        filename: uniqueFilename,
-        path: `/uploads/${uniqueFilename}`,
+        filename: filename,
+        path: `/uploads/${filename}`,
         size: buffer.length
       },
       { status: 201 }
