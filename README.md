@@ -44,16 +44,16 @@ Das erstellte Video wird schlussendlich über die Youtube API hochgeladen.
   - [ ] Kamerastativ irgendwie
   - [ ] Vielleicht irgendwas was den Hintergrund ganz ok aussehen lässt, z.B. was das ein DIN A4/3 Papier hochhalten würde
 - Raspberry Pi
-  - [ ] Jumper Kabel organisieren
+  - [X] Jumper Kabel organisieren
   - [ ] Python Programm
-    - [ ] Feuchtigkeitsstand überprüfen und einen Schwellwert für die Pumpe definieren
-    - [ ] Pumpe aktivieren entsprechend für die Pflanze (Wasserbedarf für jede Pflanze unterschiedlich)
+    - [X] Feuchtigkeitsstand überprüfen und einen Schwellwert für die Pumpe definieren
+    - [X] Pumpe aktivieren entsprechend für die Pflanze (Wasserbedarf für jede Pflanze unterschiedlich)
     - [ ] Mit Kamera alle 30min Bild machen
     - [ ] API Anfrage an Server mit Bild (und evtl. Messwerten der Feuchtigkeit für Graph im Video)
 - Server
-  - [ ] REST API, welche Bilder entgegen nehmen kann
-  - [ ] Am ende des Tages Videoerstellung mittels FFMPEG
-  - [ ] Upload des Videos über die Youtube API
+  - [X] REST API, welche Bilder entgegen nehmen kann
+  - [X] Am ende des Tages Videoerstellung mittels FFMPEG
+  - [X] Upload des Videos über die Youtube API
   - [x] Server App läuft in Docker
 
 
