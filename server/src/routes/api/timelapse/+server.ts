@@ -7,6 +7,11 @@ import ffmpeg from 'fluent-ffmpeg';
 import { google } from 'googleapis';
 import { env } from '$env/dynamic/private';
 
+// --- NEU: Limit erhöhen ---
+export const config = {
+    bodySizeLimit: Infinity // Erlaubt beliebig große Uploads
+};
+
 const UPLOAD_DIR = path.resolve('static/uploads');
 const OUTPUT_DIR = path.resolve('static/videos');
 
