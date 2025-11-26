@@ -5,6 +5,10 @@ import { type RequestHandler } from '@sveltejs/kit';
 import { existsSync } from 'fs';
 import { env } from '$env/dynamic/private';
 
+export const config = {
+    bodySizeLimit: '10mb' 
+};
+
 // ACHTUNG: Der Upload-Ordner muss existieren
 const UPLOAD_DIR = path.resolve('static/uploads');
 
