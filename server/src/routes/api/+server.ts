@@ -6,7 +6,7 @@ import { existsSync } from 'fs';
 import { env } from '$env/dynamic/private';
 
 export const config = {
-    bodySizeLimit: '10mb' 
+    bodySizeLimit: Infinity
 };
 
 // ACHTUNG: Der Upload-Ordner muss existieren
