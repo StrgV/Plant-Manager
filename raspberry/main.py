@@ -8,6 +8,8 @@ from adafruit_seesaw.seesaw import Seesaw
 import datetime
 import os
 import subprocess
+import requests
+from dotenv import load_dotenv
 
 
 # ========== Settings ==========
@@ -16,6 +18,11 @@ TROCKEN_SCHWELLE = 650  # kalibrierter mit nassem Tuch lol
 MESS_INTERVALL = 5     # Alle 60 Sekunden messen
 PUMP_DAUER = 5          # 5 Sekunden gießen
 # ===================================
+
+# Laden der Environment Variablen (.env Datei)
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+API_URL = os.getenv("API_URL")
 
 # ----------- HIER DEINE EINSTELLUNGEN -----------
 WARTEZEIT_SEKUNDEN = 5
@@ -84,6 +91,26 @@ try:
 
         # 3. Befehl ausführen
         subprocess.run(befehl)
+
+        print("🚀 Lade hoch...")
+        try:
+            with open(voller_pfad, 'rb') as f:
+                # Hier passiert der Upload
+                files = {'image': f}
+                headers = {'Authorization': f'Bearer {API_KEY}'}
+                
+                response = requests.post(API_URL, files=files, headers=headers, timeout=30)
+                
+                if response.status_code == 201:
+                    print("✅ Upload erfolgreich!")
+                    # Bild lokal löschen um Platz zu sparen
+                    os.remove(voller_pfad) 
+                    print("🗑️ Lokales Bild gelöscht.")
+                else:
+                    print(f"❌ Fehler beim Upload: {response.status_code} - {response.text}")
+
+        except Exception as e:
+            print(f"❌ Netzwerkfehler beim Upload: {e}")
 
         # 4. Warten
         time.sleep(WARTEZEIT_SEKUNDEN)
