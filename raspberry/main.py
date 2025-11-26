@@ -95,15 +95,14 @@ try:
         print("🚀 Lade hoch...")
         try:
             with open(voller_pfad, 'rb') as f:
-                # Hier passiert der Upload
                 files = {'image': f}
+                data = {'uuid': API_KEY}  # UUID als FormData mitschicken
                 headers = {'Authorization': f'Bearer {API_KEY}'}
                 
-                response = requests.post(API_URL, files=files, headers=headers, timeout=30)
+                response = requests.post(API_URL, files=files, data=data, headers=headers, timeout=30)
                 
                 if response.status_code == 201:
                     print("✅ Upload erfolgreich!")
-                    # Bild lokal löschen um Platz zu sparen
                     os.remove(voller_pfad) 
                     print("🗑️ Lokales Bild gelöscht.")
                 else:
