@@ -5,6 +5,10 @@ from gpiozero import OutputDevice
 import time
 import board
 from adafruit_seesaw.seesaw import Seesaw
+import datetime
+import os
+import subprocess
+
 
 # ========== Settings ==========
 PUMPE_PIN = 17
@@ -18,7 +22,7 @@ WARTEZEIT_SEKUNDEN = 5
 
 # Trage hier die Werte ein, die bei dir das Lila-Problem beheben!
 # (z.B. "1.0,2.2" oder "1.2,1.9")
-AWB_GAINS = "1.0,1.5" 
+AWB_GAINS = "0,0" 
 
 # Ordner, in dem die Bilder gespeichert werden
 BILDER_ORDNER = "aufnahmen"
