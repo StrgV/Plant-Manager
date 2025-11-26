@@ -39,7 +39,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const file = formData.get('image');
     const uuid = formData.get('uuid');
 
-    if (uuid !== null || uuid !== env.UUID) {
+    if (uuid == null || uuid !== env.UUID) {
       return json({ message: 'Falsche UUID' }, { status: 400 });
     }
 
