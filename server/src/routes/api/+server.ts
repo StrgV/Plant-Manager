@@ -39,9 +39,9 @@ export const POST: RequestHandler = async ({ request }) => {
     const file = formData.get('image');
     const uuid = formData.get('uuid');
 
-    if (uuid !== env.UUID) {
-      return json({ message: 'Falsche UUID' }, { status: 400 });
-    }
+    // if (uuid !== env.UUID) {
+    //   return json({ message: 'Falsche UUID' }, { status: 400 });
+    // }
 
     if (!file || !(file instanceof File)) {
       return json({ message: 'Keine Datei gefunden' }, { status: 400 });
