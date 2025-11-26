@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { type RequestHandler } from '@sveltejs/kit';
 import { existsSync } from 'fs';
+import { env } from '$env/dynamic/private';
 
 // ACHTUNG: Der Upload-Ordner muss existieren
 const UPLOAD_DIR = path.resolve('static/uploads');
@@ -10,10 +11,11 @@ const UPLOAD_DIR = path.resolve('static/uploads');
 // Hilfsfunktion: Zeitstempel für Dateinamen (z.B. 2025-11-21_23-55-01)
 function getTimestamp() {
   const now = new Date();
-  return now.toISOString()
-    .replace(/T/, '_')      // T durch _ ersetzen
-    .replace(/\..+/, '')    // Millisekunden entfernen
-    .replace(/:/g, '-');    // Doppelpunkte durch Bindestriche (Windows-kompatibel)
+  return now
+    .toISOString()
+    .replace(/T/, '_') // T durch _ ersetzen
+    .replace(/\..+/, '') // Millisekunden entfernen
+    .replace(/:/g, '-'); // Doppelpunkte durch Bindestriche (Windows-kompatibel)
 }
 
 // Stelle sicher, dass der Upload-Ordner existiert
@@ -31,6 +33,11 @@ export const POST: RequestHandler = async ({ request }) => {
     // 1. Lesen der Formulardaten (multipart/form-data)
     const formData = await request.formData();
     const file = formData.get('image');
+    const uuid = formData.get('uuid');
+
+    if (uuid !== null || uuid !== env.UUID) {
+      return json({ message: 'Falsche UUID' }, { status: 400 });
+    }
 
     if (!file || !(file instanceof File)) {
       return json({ message: 'Keine Datei gefunden' }, { status: 400 });
@@ -63,9 +70,13 @@ export const POST: RequestHandler = async ({ request }) => {
     );
   } catch (error) {
     console.error('Upload-Fehler:', error);
-    return json({ 
-      message: 'Interner Serverfehler beim Speichern der Datei',
-      error: error instanceof Error ? error.message : 'Unbekannter Fehler'
-    }, { status: 500 });
+    return json(
+      {
+        message: 'Interner Serverfehler beim Speichern der Datei',
+        error: error instanceof Error ? error.message : 'Unbekannter Fehler'
+      },
+      { status: 500 }
+    );
   }
 };
+
