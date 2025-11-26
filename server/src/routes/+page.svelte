@@ -288,8 +288,36 @@
 			</div>
 		{/if}
 	</div>
+	<div class="card admin-card">
+		<h2>🚀 Live-Steuerung (Echte Bilder)</h2>
+		<p>
+			Hier kannst du den täglichen Prozess manuell starten. <br />
+			<strong>Achtung:</strong> Dies verarbeitet alle echten Bilder von heute, lädt das Video hoch
+			und
+			<strong>löscht danach die Bilder</strong> (genau wie der echte Scheduler).
+		</p>
 
-	<!-- Bestehender Upload-Bereich -->
+		<button on:click={createTimelapse} disabled={isCreatingTimelapse} class="btn btn-primary">
+			{#if isCreatingTimelapse}
+				⏳ Verarbeite echte Bilder & Upload...
+			{:else}
+				▶️ Tages-Prozess jetzt starten
+			{/if}
+		</button>
+
+		{#if timelapseUrl && generatedCount === 0}
+			<div class="video-result">
+				<h3>✅ Live-Zeitraffer fertig:</h3>
+				<video controls width="100%" style="max-width: 400px;">
+					<source src={timelapseUrl} type="video/mp4" />
+				</video>
+				<p>
+					<a href={timelapseUrl} download>📥 Video herunterladen</a> <br />
+					<small>(Checke deinen YouTube Kanal für den Upload!)</small>
+				</p>
+			</div>
+		{/if}
+	</div>
 	<div class="card">
 		<h2>📤 Manueller Upload</h2>
 
