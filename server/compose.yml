@@ -16,6 +16,9 @@ services:
       
     ports:
       - "8080:3000"
+
+    environment:
+      - BODY_SIZE_LIMIT=Infinity
     
     # Volumes für persistente Daten
     volumes:

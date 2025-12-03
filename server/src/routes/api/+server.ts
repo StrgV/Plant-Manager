@@ -5,6 +5,10 @@ import { type RequestHandler } from '@sveltejs/kit';
 import { existsSync } from 'fs';
 import { env } from '$env/dynamic/private';
 
+export const config = {
+    bodySizeLimit: Infinity
+};
+
 // ACHTUNG: Der Upload-Ordner muss existieren
 const UPLOAD_DIR = path.resolve('static/uploads');
 
@@ -35,9 +39,9 @@ export const POST: RequestHandler = async ({ request }) => {
     const file = formData.get('image');
     const uuid = formData.get('uuid');
 
-    if (uuid !== null || uuid !== env.UUID) {
-      return json({ message: 'Falsche UUID' }, { status: 400 });
-    }
+    // if (uuid !== env.UUID) {
+    //   return json({ message: 'Falsche UUID' }, { status: 400 });
+    // }
 
     if (!file || !(file instanceof File)) {
       return json({ message: 'Keine Datei gefunden' }, { status: 400 });
