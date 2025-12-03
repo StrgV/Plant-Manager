@@ -1,123 +1,138 @@
 # activate venv!!
 # source ~/pumpen-env/bin/activate
 
-from gpiozero import OutputDevice
 import time
 import board
-from adafruit_seesaw.seesaw import Seesaw
 import datetime
 import os
 import subprocess
 import requests
+import signal
+import sys
+from gpiozero import OutputDevice
+from adafruit_seesaw.seesaw import Seesaw
 from dotenv import load_dotenv
 
+# Hier ist die Magie:
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # ========== Settings ==========
 PUMPE_PIN = 17
-TROCKEN_SCHWELLE = 650  # kalibrierter mit nassem Tuch lol
-MESS_INTERVALL = 5     # Alle 60 Sekunden messen
-PUMP_DAUER = 5          # 5 Sekunden gießen
-# ===================================
+TROCKEN_SCHWELLE = 700
+PUMP_DAUER = 3 
 
-# Laden der Environment Variablen (.env Datei)
+# Intervalle & Zeitpläne
+CHECK_INTERVALL_MINUTEN = 60  # Alle 60 Minuten Feuchtigkeit prüfen
+FOTO_INTERVALL_MINUTEN = 30   # NEU: Alle 30 Minuten ein Foto
+
+AWB_GAINS = "1.0,1.1" 
+BILDER_ORDNER = "aufnahmen"
+
+# Umgebungsvariablen laden
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 API_URL = os.getenv("API_URL")
 
-# ----------- HIER DEINE EINSTELLUNGEN -----------
-WARTEZEIT_SEKUNDEN = 5
+# ========== Initialisierung ==========
 
-# Trage hier die Werte ein, die bei dir das Lila-Problem beheben!
-# (z.B. "1.0,2.2" oder "1.2,1.9")
-AWB_GAINS = "0,0" 
-
-# Ordner, in dem die Bilder gespeichert werden
-BILDER_ORDNER = "aufnahmen"
-# -----------------------------------------------
-
-
-# Hw initialisieren
+# Hardware
 pumpe = OutputDevice(PUMPE_PIN, active_high=True, initial_value=False)
 i2c_bus = board.I2C()
 sensor = Seesaw(i2c_bus, addr=0x36)
 
-print("Automatische Bewässerung gestartet")
-print(f"Pumpe: GPIO {PUMPE_PIN}")
-print(f"Schwellenwert: {TROCKEN_SCHWELLE}")
-print(f"Messintervall: {MESS_INTERVALL}s")
-print("Drücke STRG+C zum Beenden.\n")
+# Ordner sicherstellen
+os.makedirs(BILDER_ORDNER, exist_ok=True)
 
-try:
-    while True:
-        # Feuchtigkeit messen
+# ========== Funktionen (Jobs) ==========
+
+def job_feuchtigkeit_pruefen():
+    """Misst Feuchtigkeit und gießt bei Bedarf."""
+    try:
         moisture = sensor.moisture_read()
         temp = sensor.get_temp()
-        
-        print(f"{temp:.1f}°C | Feuchtigkeit: {moisture}", end=" ")
-        
-        # Pumpenlogik
+        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+
+        print(f"[{timestamp}] Check: {temp:.1f}°C | Feuchte: {moisture}")
+
         if moisture < TROCKEN_SCHWELLE:
-            fehlende_feuchtigkeit = TROCKEN_SCHWELLE - moisture
-            print(f"→ ZU TROCKEN (-{fehlende_feuchtigkeit})! Gieße {PUMP_DAUER}s...")
+            diff = TROCKEN_SCHWELLE - moisture
+            print(f"   >>> ZU TROCKEN (-{diff})! Gieße {PUMP_DAUER}s...")
+            
             pumpe.on()
-            time.sleep(PUMP_DAUER)
+            # Hier ist ein kurzes sleep OK, da wir aktiv gießen wollen
+            time.sleep(PUMP_DAUER) 
             pumpe.off()
-            print("Fertig gegossen")
-            print(f"{temp:.1f}°C | Feuchtigkeit: {moisture}", end=" \n")
-            # Wenn längere INtervalle nochmal gießen (loop maybe risky, wenn Wasser leer überhitzt Pumpe)
-
+            
+            print("   >>> Gießen beendet.")
         else:
-            ueberschuss = moisture - TROCKEN_SCHWELLE
-            print(f"→ OK (+{ueberschuss})")
-        
-        # Warten bis zur nächsten Messung
-        time.sleep(MESS_INTERVALL)
+            print("   >>> Alles OK.")
 
+    except Exception as e:
+        print(f"ERROR beim Messen/Gießen: {e}")
+        pumpe.off() # Sicherheitsabschaltung
 
-        # 1. Aktuelle Uhrzeit für einen einzigartigen Dateinamen holen
-        jetzt = datetime.datetime.now()
-        dateiname = jetzt.strftime("%Y-%m-%d_%H-%M-%S.jpg")
-        voller_pfad = os.path.join(BILDER_ORDNER, dateiname)
+def job_foto_upload():
+    """Macht ein Foto und lädt es hoch."""
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    dateiname = f"{timestamp}.jpg"
+    voller_pfad = os.path.join(BILDER_ORDNER, dateiname)
+    
+    print(f"\n[{timestamp}] Starte Foto-Workflow...")
 
-        # 2. Den rpicam-still Befehl zusammenbauen
-        befehl = [
-            "rpicam-still",
-            "--awbgains", AWB_GAINS, # Deine Farbanpassung
-            "-n",                      # -n (no preview) ist WICHTIG über SSH!
-            "-o", voller_pfad          # -o (output) mit dem vollen Pfad
-        ]
+    # Befehl bauen
+    befehl = [
+        "rpicam-still",
+        "--awbgains", AWB_GAINS,
+        "-n",
+        "-o", voller_pfad
+    ]
 
-        print(f"Mache Foto: {dateiname}")
+    try:
+        # Foto machen
+        subprocess.run(befehl, check=True, capture_output=True, text=True)
+        print(f"   Foto gespeichert: {dateiname}")
 
-        # 3. Befehl ausführen
-        subprocess.run(befehl)
+        # Upload
+        print("   Lade hoch...")
+        with open(voller_pfad, 'rb') as f:
+            files = {'image': f}
+            headers = {'Authorization': f'Bearer {API_KEY}'}
+            response = requests.post(API_URL, files=files, headers=headers, timeout=60)
 
-        print("🚀 Lade hoch...")
-        try:
-            with open(voller_pfad, 'rb') as f:
-                # Hier passiert der Upload
-                files = {'image': f}
-                headers = {'Authorization': f'Bearer {API_KEY}'}
-                
-                response = requests.post(API_URL, files=files, headers=headers, timeout=30)
-                
-                if response.status_code == 201:
-                    print("✅ Upload erfolgreich!")
-                    # Bild lokal löschen um Platz zu sparen
-                    os.remove(voller_pfad) 
-                    print("🗑️ Lokales Bild gelöscht.")
-                else:
-                    print(f"❌ Fehler beim Upload: {response.status_code} - {response.text}")
+        if response.status_code == 201 or response.status_code == 200:
+            print("   Upload erfolgreich! Lösche lokales Bild.")
+            os.remove(voller_pfad)
+        else:
+            print(f"   Upload FEHLER: {response.status_code} - {response.text}")
 
-        except Exception as e:
-            print(f"❌ Netzwerkfehler beim Upload: {e}")
+    except Exception as e:
+        print(f"ERROR beim Foto/Upload: {e}")
 
-        # 4. Warten
-        time.sleep(WARTEZEIT_SEKUNDEN)
+# ========== Hauptprogramm ==========
 
-        
-except KeyboardInterrupt:
-    print("\n\nProgramm gestoppt")
-finally:
-    pumpe.off()
-    print("Pumpe sicher ausgeschaltet")
+if __name__ == "__main__":
+    # Scheduler einrichten
+    scheduler = BackgroundScheduler()
+
+    # Job 1: Feuchtigkeit (Interval)
+    # Startet sofort beim ersten Mal, dann alle X Minuten
+    scheduler.add_job(job_feuchtigkeit_pruefen, 'interval', minutes=CHECK_INTERVALL_MINUTEN, next_run_time=datetime.datetime.now())
+
+    # Job 2: Foto (Interval)
+    # Startet JETZT sofort ein Foto, und dann alle 30 Minuten
+    scheduler.add_job(job_foto_upload, 'interval', minutes=FOTO_INTERVALL_MINUTEN, next_run_time=datetime.datetime.now())
+
+    print("--- Plant Manager 2.0 gestartet ---")
+    print(f"Messe alle {CHECK_INTERVALL_MINUTEN} Minuten.")
+    print(f"Mache Foto alle {FOTO_INTERVALL_MINUTEN} Minuten.")
+    print("Drücke STRG+C zum Beenden.")
+    
+    scheduler.start()
+
+    try:
+        signal.pause() 
+    except (KeyboardInterrupt, SystemExit):
+        print("\nBeende Programm...")
+        scheduler.shutdown()
+        pumpe.off()
+        print("Pumpe aus, Scheduler gestoppt.")
