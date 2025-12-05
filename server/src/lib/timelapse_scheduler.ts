@@ -2,7 +2,7 @@ import cron from 'node-cron';
 
 // Jeden Tag um 13:00 Uhr ausführen
 export function startTimelapseScheduler() {
-  cron.schedule('00 13 * * *', async () => {
+  cron.schedule('00 12 * * *', async () => {
     console.log('Starte täglichen Zeitraffer-Upload...');
     
     try {
