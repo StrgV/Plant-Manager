@@ -1,12 +1,12 @@
 import cron from 'node-cron';
 
-// Jeden Tag um 23:55 Uhr ausführen
+// Jeden Tag um 13:00 Uhr ausführen
 export function startTimelapseScheduler() {
-  cron.schedule('55 23 * * *', async () => {
+  cron.schedule('00 13 * * *', async () => {
     console.log('Starte täglichen Zeitraffer-Upload...');
     
     try {
-      const response = await fetch('http://localhost:5173/api/timelapse', {
+      const response = await fetch('http://localhost:3000/api/timelapse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -26,5 +26,5 @@ export function startTimelapseScheduler() {
     }
   });
 
-  console.log('🕐 Zeitraffer-Scheduler aktiv (täglich 23:55 Uhr)');
+  console.log('🕐 Zeitraffer-Scheduler aktiv (täglich 13:00 Uhr)');
 }
