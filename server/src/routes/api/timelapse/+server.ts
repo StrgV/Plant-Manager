@@ -1,11 +1,13 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import path from 'path';
-import { readdir, unlink } from 'fs/promises'; // unlink = löschen
+// import { readdir, unlink } from 'fs/promises'; // unlink = löschen
 import { createReadStream, existsSync } from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { google } from 'googleapis';
 import { env } from '$env/dynamic/private';
+import { writeFile, readdir, unlink } from 'fs/promises';
+
 
 const UPLOAD_DIR = path.resolve('static/uploads');
 const OUTPUT_DIR = path.resolve('static/videos');
@@ -53,30 +55,64 @@ async function uploadToYouTube(filePath: string, date: string) {
 async function createTimelapse(date: string): Promise<string> {
   const outputFilename = `timelapse_${date}.mp4`;
   const outputPath = path.join(OUTPUT_DIR, outputFilename);
+  const listFilePath = path.join(UPLOAD_DIR, `files_${date}.txt`);
 
-  // Ordner erstellen falls nicht da
-  if (!existsSync(OUTPUT_DIR)) {
-    const { mkdir } = await import('fs/promises');
-    await mkdir(OUTPUT_DIR, { recursive: true });
-  }
+  // 1. Alle Dateien lesen und filtern
+  const files = await readdir(UPLOAD_DIR);
+  const imageFiles = files
+    .filter(f => f.startsWith(`cam_${date}_`) && f.endsWith('.jpg'))
+    // 2. Explizit sortieren (wichtig gegen das "Springen")
+    .sort((a, b) => {
+        // Extrahiere den Timestamp Teil nach dem letzten _ und vor .jpg
+        // Format: cam_2023-11-21_123456789.jpg
+        const tsA = parseInt(a.split('_').pop()?.split('.')[0] || '0');
+        const tsB = parseInt(b.split('_').pop()?.split('.')[0] || '0');
+        return tsA - tsB;
+    });
 
-  // ✅ TRICK: Wir bauen das Pattern dynamisch mit dem Datum!
-  // Statt "*.jpg" suchen wir jetzt explizit nach "cam_2025-11-21_*.jpg"
-  const globPattern = path.join(UPLOAD_DIR, `cam_${date}_*.jpg`);
+  if (imageFiles.length === 0) throw new Error('Keine Bilder gefunden');
 
+  console.log(`🎬 Erstelle Zeitraffer aus ${imageFiles.length} Bildern...`);
+
+  // 3. File-List für FFmpeg erstellen (Concat Demuxer Format)
+  // Format pro Zeile: file '/pfad/zum/bild.jpg'
+  // Optional: duration 0.1 (für Framerate Steuerung pro Bild)
+  const fileContent = imageFiles
+    .map(filename => `file '${path.join(UPLOAD_DIR, filename)}'`)
+    .join('\n');
+
+  await writeFile(listFilePath, fileContent);
+
+  // 4. FFmpeg mit der Liste füttern
   return new Promise((resolve, reject) => {
     ffmpeg()
-      .input(globPattern) // Hier greift der Datums-Filter
-      .inputOptions([
-        '-pattern_type glob',
-        '-framerate 1' // 1 Bild pro Sekunde
-      ])
+      .input(listFilePath)
+      .inputOptions(['-f concat', '-safe 0']) // -f concat liest die Textdatei
+      
+      // OPTION A: Slideshow (1 Bild pro Sekunde fest)
+      // .inputOptions(['-r 1']) 
+      
+      // OPTION B: Flüssiger Zeitraffer (z.B. 30 Bilder pro Sekunde abspielen)
+      // Das hier sorgt dafür, dass aus 30 Bildern 1 Sekunde Video wird.
+      .inputOptions(['-r 30']) 
+
       .size('1080x1920')
       .videoCodec('libx264')
-      .outputOptions(['-pix_fmt yuv420p', '-preset fast', '-crf 23']) // -t entfernt, damit er alle Bilder nimmt
-      .on('start', (cmd) => console.log('🎬 FFmpeg CMD:', cmd))
-      .on('end', () => resolve(outputPath))
-      .on('error', (err) => reject(err))
+      .outputOptions([
+        '-pix_fmt yuv420p', 
+        '-preset fast', 
+        '-crf 23',
+        '-r 30' // Das Ausgabevideo soll technisch 30fps haben (YouTube Standard)
+      ])
+      .on('end', async () => {
+        await unlink(listFilePath); // Aufräumen der Textdatei
+        console.log('✅ Video erstellt:', outputPath);
+        resolve(outputPath);
+      })
+      .on('error', async (err) => {
+        await unlink(listFilePath).catch(() => {});
+        reject(err);
+      })
       .save(outputPath);
   });
 }

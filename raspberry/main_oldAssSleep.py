@@ -5,20 +5,31 @@ from gpiozero import OutputDevice
 import time
 import board
 from adafruit_seesaw.seesaw import Seesaw
+import datetime
+import os
+import subprocess
+import requests
+from dotenv import load_dotenv
+
 
 # ========== Settings ==========
 PUMPE_PIN = 17
-TROCKEN_SCHWELLE = 900  # kalibriertert
-MESS_INTERVALL = 86_400      # Alle 5 Minuten
-PUMP_DAUER = 10          # 10 Sekunden gießen
+TROCKEN_SCHWELLE = 900  # kalibrierterig
+MESS_INTERVALL = 5     # Alle 60 Sekunden messen
+PUMP_DAUER = 1          # 10 Sekunden gießen
 # ===================================
+
+# Laden der Environment Variablen (.env Datei)
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+API_URL = os.getenv("API_URL")
 
 # ----------- HIER DEINE EINSTELLUNGEN -----------
 WARTEZEIT_SEKUNDEN = 5
 
 # Trage hier die Werte ein, die bei dir das Lila-Problem beheben!
 # (z.B. "1.0,2.2" oder "1.2,1.9")
-AWB_GAINS = "1.0,1.5" 
+AWB_GAINS = "1,1" # neutral 
 
 # Ordner, in dem die Bilder gespeichert werden
 BILDER_ORDNER = "aufnahmen"
@@ -71,15 +82,38 @@ try:
         # 2. Den rpicam-still Befehl zusammenbauen
         befehl = [
             "rpicam-still",
-            "--awbgains", AWB_GAINS, # Deine Farbanpassung
+            "--awbgains", AWB_GAINS,
             "-n",                      # -n (no preview) ist WICHTIG über SSH!
             "-o", voller_pfad          # -o (output) mit dem vollen Pfad
         ]
 
-        print(f"Mache Foto: {dateiname}")
+        print(f"Mache Foto: {dateiname}", flush=True)
+        print("✓ Gespeichert")
 
         # 3. Befehl ausführen
-        subprocess.run(befehl)
+        subprocess.run(befehl, check=True, capture_output=True, text=True)
+
+        print("Lade hoch...")
+        try:
+            with open(voller_pfad, 'rb') as f:
+                # Hier passiert der Upload
+                files = {'image': f}
+                headers = {'Authorization': f'Bearer {API_KEY}'}
+                
+                response = requests.post(API_URL, files=files, headers=headers, timeout=30)
+                
+                if response.status_code == 201:
+                    print("Upload erfolgreich!")
+                    # Bild lokal löschen um Platz zu sparen
+                    os.remove(voller_pfad) 
+                    print("Lokales Bild gelöscht.")
+                else:
+                    print(f"Fehler beim Upload: {response.status_code} - {response.text}")
+
+        except Exception as e:
+            print(f"Netzwerkfehler beim Upload: {e}")
+
+
 
         # 4. Warten
         time.sleep(WARTEZEIT_SEKUNDEN)

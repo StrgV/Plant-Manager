@@ -36,14 +36,14 @@ print("🌱 KALIBRIERUNG - Finde deine Schwellenwerte!\n")
 print("1️⃣  Stecke den Sensor in TROCKENE Erde")
 print("    Warte 10 Sekunden...\n")
 
-time.sleep(10)
+time.sleep(1)
 trocken_wert = ss.moisture_read()
 print(f"✅ TROCKEN: {trocken_wert}\n")
 
 print("2️⃣  Gieße die Erde richtig nass")
 print("    Warte 10 Sekunden...\n")
 
-time.sleep(10)
+time.sleep(1)
 nass_wert = ss.moisture_read()
 print(f"✅ NASS: {nass_wert}\n")
 
