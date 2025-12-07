@@ -108,7 +108,7 @@
 
 			for (let i = 0; i < totalToGenerate; i++) {
 				const color = colors[i % colors.length];
-				const timestamp = Date.now() - (totalToGenerate - i) * 30 * 60 * 1000;
+				const timestamp = Date.now() - (totalToGenerate - i) * 2 * 60 * 1000;
 				const time = new Date(timestamp).toLocaleTimeString('de-DE');
 
 				// Bild im Browser erstellen
@@ -136,7 +136,7 @@
 				generatedCount = i + 1;
 
 				// Kleine Pause, um Server nicht zu überlasten
-				await new Promise((resolve) => setTimeout(resolve, 100));
+				await new Promise((resolve) => setTimeout(resolve, 1100));
 			}
 
 			showMessage(`✅ ${totalToGenerate} Test-Bilder erfolgreich hochgeladen!`, 'success');
@@ -152,8 +152,9 @@
 	async function createTestImage(text: string, color: string): Promise<Blob> {
 		return new Promise((resolve, reject) => {
 			const canvas = document.createElement('canvas');
-			canvas.width = 1080;
-			canvas.height = 1920;
+			// QUERFORMAT: 1920x1080
+			canvas.width = 1920;
+			canvas.height = 1080;
 			const ctx = canvas.getContext('2d');
 
 			if (!ctx) {
@@ -379,7 +380,7 @@
 		<ul>
 			<li>Upload-API: <code>/api</code></li>
 			<li>Zeitraffer-API: <code>/api/timelapse</code></li>
-			<li>Video-Format: 1080x1920 (9:16 für YouTube Shorts)</li>
+			<li>Video-Format: 1920x1080 (16:9 Querformat)</li>
 			<li>Max. Länge: 59 Sekunden @ 30fps</li>
 		</ul>
 	</div>

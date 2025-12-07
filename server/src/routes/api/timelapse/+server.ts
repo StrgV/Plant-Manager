@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import path from 'path';
-// import { readdir, unlink } from 'fs/promises'; // unlink = löschen
 import { createReadStream, existsSync } from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { google } from 'googleapis';
@@ -12,7 +11,7 @@ import { writeFile, readdir, unlink } from 'fs/promises';
 const UPLOAD_DIR = path.resolve('static/uploads');
 const OUTPUT_DIR = path.resolve('static/videos');
 
-// --- YouTube Setup (bleibt gleich) ---
+// --- YouTube Setup ---
 const oauth2Client = new google.auth.OAuth2(
   env.YOUTUBE_CLIENT_ID,
   env.YOUTUBE_CLIENT_SECRET,
@@ -30,7 +29,6 @@ const youtube = google.youtube({
 
 // --- Hilfsfunktion: Video Upload ---
 async function uploadToYouTube(filePath: string, date: string) {
-  // ... (Identisch wie vorher, nur der Code bleibt übersichtlicher)
   const res = await youtube.videos.insert({
     part: ['snippet', 'status'],
     requestBody: {
@@ -41,7 +39,7 @@ async function uploadToYouTube(filePath: string, date: string) {
         categoryId: '28'
       },
       status: {
-        privacyStatus: 'unlisted' // Video ist nicht öffentlich
+        privacyStatus: 'unlisted'
       }
     },
     media: {
@@ -51,7 +49,7 @@ async function uploadToYouTube(filePath: string, date: string) {
   return res.data;
 }
 
-// --- FFmpeg Logik (Optimiert) ---
+// --- FFmpeg Logik ---
 async function createTimelapse(date: string): Promise<string> {
   const outputFilename = `timelapse_${date}.mp4`;
   const outputPath = path.join(OUTPUT_DIR, outputFilename);
@@ -63,8 +61,6 @@ async function createTimelapse(date: string): Promise<string> {
     .filter(f => f.startsWith(`cam_${date}_`) && f.endsWith('.jpg'))
     // 2. Explizit sortieren (wichtig gegen das "Springen")
     .sort((a, b) => {
-        // Extrahiere den Timestamp Teil nach dem letzten _ und vor .jpg
-        // Format: cam_2023-11-21_123456789.jpg
         const tsA = parseInt(a.split('_').pop()?.split('.')[0] || '0');
         const tsB = parseInt(b.split('_').pop()?.split('.')[0] || '0');
         return tsA - tsB;
@@ -75,8 +71,6 @@ async function createTimelapse(date: string): Promise<string> {
   console.log(`🎬 Erstelle Zeitraffer aus ${imageFiles.length} Bildern...`);
 
   // 3. File-List für FFmpeg erstellen (Concat Demuxer Format)
-  // Format pro Zeile: file '/pfad/zum/bild.jpg'
-  // Optional: duration 0.1 (für Framerate Steuerung pro Bild)
   const fileContent = imageFiles
     .map(filename => `file '${path.join(UPLOAD_DIR, filename)}'`)
     .join('\n');
@@ -87,25 +81,18 @@ async function createTimelapse(date: string): Promise<string> {
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input(listFilePath)
-      .inputOptions(['-f concat', '-safe 0']) // -f concat liest die Textdatei
-      
-      // OPTION A: Slideshow (1 Bild pro Sekunde fest)
-      // .inputOptions(['-r 1']) 
-      
-      // OPTION B: Flüssiger Zeitraffer (z.B. 30 Bilder pro Sekunde abspielen)
-      // Das hier sorgt dafür, dass aus 30 Bildern 1 Sekunde Video wird.
-      .inputOptions(['-r 30']) 
-
-      .size('1080x1920')
+      .inputOptions(['-f concat', '-safe 0'])
+      .inputOptions(['-r 5']) 
+      .size('1920x1080')  // QUERFORMAT
       .videoCodec('libx264')
       .outputOptions([
         '-pix_fmt yuv420p', 
         '-preset fast', 
         '-crf 23',
-        '-r 30' // Das Ausgabevideo soll technisch 30fps haben (YouTube Standard)
+        '-r 5'
       ])
       .on('end', async () => {
-        await unlink(listFilePath); // Aufräumen der Textdatei
+        await unlink(listFilePath);
         console.log('✅ Video erstellt:', outputPath);
         resolve(outputPath);
       })
@@ -122,7 +109,6 @@ async function deleteImages(date: string) {
   console.log('🧹 Räume alte Bilder auf...');
   const files = await readdir(UPLOAD_DIR);
   
-  // Nur Bilder von HEUTE löschen
   const todaysImages = files.filter(f => f.startsWith(`cam_${date}_`));
   
   for (const file of todaysImages) {
@@ -136,9 +122,8 @@ export const POST: RequestHandler = async ({ request }) => {
     const { action } = await request.json();
     if (action !== 'create_timelapse') return json({ message: 'Ungültige Aktion' }, { status: 400 });
 
-    const date = new Date().toISOString().split('T')[0]; // Format: 2025-11-21
+    const date = new Date().toISOString().split('T')[0];
     
-    // Prüfen, ob Bilder für HEUTE da sind
     const files = await readdir(UPLOAD_DIR);
     const hasImages = files.some(f => f.startsWith(`cam_${date}_`));
 
@@ -158,7 +143,7 @@ export const POST: RequestHandler = async ({ request }) => {
        return json({ message: 'Upload Fehler', error: (e as Error).message }, { status: 500 });
     }
 
-    // 3. Aufräumen (Nur wenn Upload erfolgreich war!)
+    // 3. Aufräumen
     await deleteImages(date);
 
     return json({
